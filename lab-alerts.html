@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alerts, dialogs and overlays - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Alerts, dialogs and overlays</nav>
+<section class="demo"><h1 id="page-title">Alerts, dialogs and overlays</h1><p class="sub">Browser-native dialogs, an HTML dialog element, auto-dismissing toasts and overlays that intercept clicks.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Native <code>alert</code>, <code>confirm</code> and <code>prompt</code>: results are written to <code>#alert-result</code>, <code>#confirm-result</code>, <code>#prompt-result</code>.</li><li>Delayed alert after 2 seconds: the test must wait for the dialog.</li><li><code>&lt;dialog&gt;</code> modal with focus trap, closes with Escape or the Close button.</li><li>Toast disappears after 3 seconds: assert it quickly, then assert it is gone.</li><li>Consent overlay blocks every click until accepted (element click intercepted).</li><li>Delete confirmation pattern: destructive action needs a second click.</li></ul></details></section>
+<section class="demo"><h2>Native dialogs</h2><div class="row"><button class="btn primary" id="b-alert">Show alert</button><button class="btn primary" id="b-confirm">Show confirm</button><button class="btn primary" id="b-prompt">Show prompt</button><button class="btn sec" id="b-delayed">Alert after 2 seconds</button></div>
+<div id="alert-result" class="result" data-testid="alert-result"></div><div id="confirm-result" class="result" data-testid="confirm-result"></div><div id="prompt-result" class="result" data-testid="prompt-result"></div></section>
+<section class="demo"><h2>Modal dialog, toast, consent overlay</h2><div class="row"><button class="btn primary" id="b-modal">Open modal</button><button class="btn sec" id="b-toast">Show toast</button><button class="btn sec" id="b-consent">Show consent overlay</button></div>
+<div id="modal-result" class="result"></div>
+<dialog id="dlg" aria-labelledby="dlg-title"><h3 id="dlg-title" style="margin-top:0">Subscribe to updates</h3><p>Enter your email to hear about new test pages.</p><input id="dlg-email" type="email" placeholder="you@example.com" aria-label="Email"><div class="row" style="margin-top:14px"><button class="btn primary" id="dlg-ok">Subscribe</button><button class="btn sec" id="dlg-close">Close</button></div></dialog>
+<div id="consent" class="overlay" role="dialog" aria-modal="true" aria-label="Cookie consent" hidden><div class="demo" style="max-width:420px"><h3 style="margin-top:0">We use cookies</h3><p class="sub">This overlay covers the page. Accept or reject to continue.</p><div class="row"><button class="btn primary" id="c-accept">Accept all</button><button class="btn sec" id="c-reject">Reject</button></div></div></div></section>
+<section class="demo"><h2>Delete confirmation</h2><div class="row"><span id="item-name">Draft report.docx</span><button class="btn danger" id="b-delete">Delete</button><span id="del-confirm" hidden class="row"><span>Are you sure?</span><button class="btn danger" id="b-yes">Yes, delete</button><button class="btn sec" id="b-no">Cancel</button></span></div><div id="del-result" class="result"></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$;
+$("#b-alert").addEventListener("click", function () { alert("Hello from an alert"); Lab.set("alert-result", "Alert was dismissed", "ok"); });
+$("#b-confirm").addEventListener("click", function () { var r = confirm("Do you want to continue?"); Lab.set("confirm-result", r ? "You pressed OK" : "You pressed Cancel", r ? "ok" : "bad"); });
+$("#b-prompt").addEventListener("click", function () { var r = prompt("What is your name?", "Guest"); Lab.set("prompt-result", r === null ? "Prompt cancelled" : "You entered: " + r, r === null ? "bad" : "ok"); });
+$("#b-delayed").addEventListener("click", function () { setTimeout(function () { alert("Delayed alert"); Lab.set("alert-result", "Delayed alert dismissed", "ok"); }, 2000); });
+var dlg = $("#dlg");
+$("#b-modal").addEventListener("click", function () { dlg.showModal(); $("#dlg-email").focus(); });
+$("#dlg-close").addEventListener("click", function () { dlg.close(); Lab.set("modal-result", "Modal closed without subscribing"); });
+$("#dlg-ok").addEventListener("click", function () { var v = $("#dlg-email").value; if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v)) { Lab.set("modal-result", "Enter a valid email in the modal", "bad"); return; } dlg.close(); Lab.set("modal-result", "Subscribed: " + v, "ok"); });
+$("#b-toast").addEventListener("click", function () { Lab.toast("Saved successfully", 3000); });
+$("#b-consent").addEventListener("click", function () { $("#consent").hidden = false; });
+$("#c-accept").addEventListener("click", function () { $("#consent").hidden = true; Lab.set("modal-result", "Consent: accepted", "ok"); });
+$("#c-reject").addEventListener("click", function () { $("#consent").hidden = true; Lab.set("modal-result", "Consent: rejected"); });
+$("#b-delete").addEventListener("click", function () { $("#del-confirm").hidden = false; $("#b-delete").hidden = true; });
+$("#b-no").addEventListener("click", function () { $("#del-confirm").hidden = true; $("#b-delete").hidden = false; });
+$("#b-yes").addEventListener("click", function () { $("#del-confirm").hidden = true; $("#item-name").style.textDecoration = "line-through"; Lab.set("del-result", "Draft report.docx deleted", "ok"); });
+</script>
+</body></html>

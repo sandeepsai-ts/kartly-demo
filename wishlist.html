@@ -1,13 +1,12 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wishlist - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="site-header"></div>
-<main class="wrap"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
 <h1 id="page-title">Wishlist</h1>
 <p class="sub">Saved for later.</p><div class="grid" id="wl"></div>
-<script>document.addEventListener("DOMContentLoaded",function(){document.getElementById("wl").innerHTML=Kartly.products.slice(1,5).map(Kartly.card).join("");});</script>
 </section></div></main>
 <div id="site-footer"></div>
-<script src="app.js"></script>
-<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("wishlist.html");}</script>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("wishlist.html");}</script><script>document.addEventListener("DOMContentLoaded",function(){document.getElementById("wl").innerHTML=Kartly.products.slice(1,5).map(Kartly.card).join("");});</script>
 </body></html>

@@ -1,16 +1,16 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Orders - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="site-header"></div>
-<main class="wrap"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
 <h1 id="page-title">Orders</h1>
 <p class="sub">Everything you have bought recently.</p>
-<table><tr><th>Order</th><th>Items</th><th>Total</th><th>Status</th></tr>
-<tr><td>#10482</td><td>Noise-cancelling Headphones</td><td>$129</td><td><span class="pill ship">Shipped</span></td></tr>
-<tr><td>#10477</td><td>Pour-over Coffee Set</td><td>$42</td><td><span class="pill">Delivered</span></td></tr>
-<tr><td>#10460</td><td>Trail Running Shoes</td><td>$84</td><td><span class="pill">Delivered</span></td></tr></table>
+<table id="orders-table"><thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody id="orders-body"></tbody></table>
 </section></div></main>
 <div id="site-footer"></div>
-<script src="app.js"></script>
-<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("orders.html");}</script>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("orders.html");}</script><script>
+var seed = [{ no: "KT-10482", date: "2026-11-12", items: "Noise-cancelling Headphones x1", total: 139.32, status: "Shipped" }, { no: "KT-10477", date: "2026-11-08", items: "Pour-over Coffee Set x1", total: 45.36, status: "Delivered" }, { no: "KT-10460", date: "2026-11-02", items: "Trail Running Shoes x1", total: 90.72, status: "Delivered" }];
+if (Kartly.isLoggedIn()) document.getElementById("orders-body").innerHTML = Kartly.orders().concat(seed).map(function (o) { return '<tr data-order="' + Kartly.esc(o.no) + '"><td>#' + Kartly.esc(o.no) + '</td><td>' + o.date + '</td><td>' + Kartly.esc(o.items) + '</td><td>' + Kartly.money(o.total) + '</td><td><span class="pill' + (o.status === "Delivered" ? "" : " ship") + '">' + o.status + '</span></td></tr>'; }).join("");
+</script>
 </body></html>

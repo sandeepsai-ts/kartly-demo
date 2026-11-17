@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Authentication scenarios - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Authentication scenarios</nav>
+<section class="demo"><h1 id="page-title">Authentication scenarios</h1><p class="sub">Different kinds of users and login flows, all client-side so they run anywhere. Every scenario has its own form and result area.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Users (password for all: <code>Demo-Only-2026</code>): <code>demo_shopper</code> works; <code>locked_shopper</code> is locked out; <code>slow_shopper</code> takes 3 seconds; <code>error_shopper</code> fails about half of the time; <code>expired_shopper</code> must change the password.</li><li>MFA step: the one-time code is <code>123456</code>; three wrong codes lock the form; a resend button is disabled for 10 seconds.</li><li>Session timeout: a 20 second session shows a countdown, then forces re-login.</li><li>Captcha-style challenge: answer a simple sum; the question changes on every load.</li><li>Password reset: validates the email format and always answers the same way, whether or not the account exists.</li></ul></details></section>
+<section class="demo"><h2>Multi-user login</h2><div class="col2"><form id="u-form" novalidate><div class="field"><label for="u-user">Username</label><input id="u-user" type="text" autocomplete="off"></div><div class="field"><label for="u-pass">Password</label><input id="u-pass" type="password" autocomplete="off"></div><button class="btn primary" id="u-login" type="submit">Log in</button></form>
+<div><p class="note">Try each user. Result:</p><div id="u-result" class="result" role="status" data-testid="u-result">Not signed in.</div></div></div></section>
+<section class="demo"><h2>MFA code</h2><p class="note">Enter the 6-digit code <code>123456</code>. Paste works too.</p><div class="otp" id="otp" role="group" aria-label="One-time code"></div><div class="row" style="margin-top:10px"><button class="btn primary" id="otp-verify">Verify</button><button class="btn sec" id="otp-resend" disabled>Resend code (10)</button></div><div id="otp-result" class="result" data-testid="otp-result"></div></section>
+<section class="demo"><h2>Session timeout</h2><div class="row"><button class="btn primary" id="sess-go">Sign in (20 second session)</button><span id="sess-clock" class="result" style="margin:0" data-testid="sess-clock">Signed out</span></div><div id="sess-msg" class="result"></div></section>
+<section class="demo"><h2>Captcha-style challenge</h2><div class="row"><span id="cap-q" data-testid="cap-q"></span><input id="cap-a" type="text" inputmode="numeric" aria-label="Answer" style="max-width:90px"><button class="btn primary" id="cap-go">Verify</button></div><div id="cap-result" class="result"></div></section>
+<section class="demo"><h2>Password reset</h2><div class="row"><input id="rs-mail" type="email" placeholder="you@example.com" aria-label="Account email" style="max-width:260px"><button class="btn primary" id="rs-go">Send reset link</button></div><div id="rs-result" class="result" role="status"></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$, PW = "Demo-Only-2026";
+$("#u-form").addEventListener("submit", function (e) { e.preventDefault(); var u = $("#u-user").value.trim(), p = $("#u-pass").value, btn = $("#u-login");
+  if (!u || !p) { Lab.set("u-result", "Username and password are required.", "bad"); return; }
+  var users = { demo_shopper: "ok", locked_shopper: "locked", slow_shopper: "slow", error_shopper: "flaky", expired_shopper: "expired" };
+  if (!users[u] || p !== PW) { Lab.set("u-result", "Invalid username or password.", "bad"); return; }
+  var kind = users[u]; btn.disabled = true; Lab.set("u-result", kind === "slow" ? "Signing in (this takes 3 seconds)..." : "Signing in...");
+  setTimeout(function () { btn.disabled = false;
+    if (kind === "locked") Lab.set("u-result", "This account is locked. Contact support.", "bad");
+    else if (kind === "flaky" && Math.random() < 0.5) Lab.set("u-result", "Something went wrong (error 500). Try again.", "bad");
+    else if (kind === "expired") Lab.set("u-result", "Your password has expired. Choose a new password to continue.", "bad");
+    else Lab.set("u-result", "Welcome, " + u + ". Signed in.", "ok"); }, kind === "slow" ? 3000 : 400); });
+var otp = $("#otp"); for (var i = 0; i < 6; i++) otp.insertAdjacentHTML("beforeend", '<input type="text" inputmode="numeric" maxlength="1" aria-label="Digit ' + (i + 1) + '" data-i="' + i + '">');
+var cells = Lab.$$("input", otp), tries = 0;
+cells.forEach(function (c, i) { c.addEventListener("input", function () { c.value = c.value.replace(/\D/g, ""); if (c.value && cells[i + 1]) cells[i + 1].focus(); }); c.addEventListener("keydown", function (e) { if (e.key === "Backspace" && !c.value && cells[i - 1]) cells[i - 1].focus(); });
+  c.addEventListener("paste", function (e) { var t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6); if (!t) return; e.preventDefault(); t.split("").forEach(function (d, k) { if (cells[k]) cells[k].value = d; }); (cells[Math.min(t.length, 5)]).focus(); }); });
+$("#otp-verify").addEventListener("click", function () { if (tries >= 3) { Lab.set("otp-result", "Too many attempts. Form locked.", "bad"); return; } var code = cells.map(function (c) { return c.value; }).join(""); if (code.length < 6) { Lab.set("otp-result", "Enter all 6 digits.", "bad"); return; }
+  if (code === "123456") Lab.set("otp-result", "Code accepted. Signed in.", "ok"); else { tries++; Lab.set("otp-result", "Wrong code (" + tries + " of 3).", "bad"); if (tries >= 3) $("#otp-verify").disabled = true; } });
+var left = 10, rt = setInterval(function () { left--; var b = $("#otp-resend"); if (left <= 0) { clearInterval(rt); b.disabled = false; b.textContent = "Resend code"; } else b.textContent = "Resend code (" + left + ")"; }, 1000);
+$("#otp-resend").addEventListener("click", function () { Lab.set("otp-result", "A new code was sent (it is still 123456).", "ok"); });
+var st; $("#sess-go").addEventListener("click", function () { var end = Date.now() + 20000; clearInterval(st); Lab.set("sess-msg", "Signed in. Keep the page open to watch the session expire.", "ok");
+  st = setInterval(function () { var s = Math.round((end - Date.now()) / 1000); if (s <= 0) { clearInterval(st); $("#sess-clock").textContent = "Expired"; Lab.set("sess-msg", "Your session timed out. Please sign in again.", "bad"); } else $("#sess-clock").textContent = "Session ends in " + s + " s"; }, 500); });
+var a = 2 + Math.floor(Math.random() * 8), b = 2 + Math.floor(Math.random() * 8); $("#cap-q").textContent = "What is " + a + " + " + b + " ?";
+$("#cap-go").addEventListener("click", function () { var v = $("#cap-a").value.trim(); if (+v === a + b && v !== "") Lab.set("cap-result", "Human verified.", "ok"); else Lab.set("cap-result", "Incorrect answer. Try again.", "bad"); });
+$("#rs-go").addEventListener("click", function () { var v = $("#rs-mail").value.trim(); if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v)) { Lab.set("rs-result", "Enter a valid email address.", "bad"); return; } Lab.set("rs-result", "If an account exists for " + v + ", a reset link is on its way.", "ok"); });
+</script>
+</body></html>

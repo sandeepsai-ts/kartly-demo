@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Frames and Shadow DOM - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Frames and Shadow DOM</nav>
+<section class="demo"><h1 id="page-title">Frames and Shadow DOM</h1><p class="sub">Content that lives in another document or behind a shadow root cannot be reached with ordinary selectors.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Switch into <code>#frame-basic</code> (also named <code>basic-frame</code>) before touching its input and button.</li><li><code>#frame-outer</code> contains <code>#frame-inner</code>: switch twice, then switch back to the parent or default content.</li><li>Open shadow root in <code>&lt;fancy-card&gt;</code>: pierce with the shadow selector. The closed root in <code>&lt;secret-card&gt;</code> cannot be reached from outside.</li><li>Slotted content stays in the light DOM and is selectable normally.</li><li>Text outside the frame (<code>#outside-result</code>) is updated by a message from inside.</li></ul></details></section>
+<section class="demo"><h2>Basic iframe</h2><p class="note">Result of the click is posted back to the parent page.</p>
+<iframe id="frame-basic" name="basic-frame" title="Basic frame" style="width:100%;height:150px;border:1px solid #e4e9ef;border-radius:8px"></iframe><div id="outside-result" class="result" data-testid="outside-result">Waiting for a message from the frame...</div></section>
+<section class="demo"><h2>Nested iframes</h2><iframe id="frame-outer" name="outer-frame" title="Outer frame" style="width:100%;height:210px;border:1px solid #e4e9ef;border-radius:8px"></iframe></section>
+<section class="demo"><h2>Shadow DOM</h2><div class="col2"><div><p class="note">Open shadow root</p><fancy-card id="shadow-open"><span slot="title">Open card (light DOM slot)</span></fancy-card></div><div><p class="note">Closed shadow root</p><secret-card id="shadow-closed"></secret-card></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var basic = '<body style="font-family:sans-serif;padding:12px"><h3 id="in-title" style="margin:0 0 8px">Inside the frame</h3><input id="in-input" placeholder="Type inside the frame"> <button id="in-btn">Send to parent</button><p id="in-msg"></p><script>document.getElementById("in-btn").onclick=function(){var v=document.getElementById("in-input").value;document.getElementById("in-msg").textContent="Sent: "+v;parent.postMessage({type:"frame-msg",value:v},"*");};<\/script></body>';
+document.getElementById("frame-basic").srcdoc = basic;
+window.addEventListener("message", function (e) { if (e.data && e.data.type === "frame-msg") Lab.set("outside-result", "Frame said: " + e.data.value, "ok"); });
+var inner = '<body style="font-family:sans-serif;padding:8px"><b id="deep-title">Inner frame</b><br><input id="deep-input" placeholder="Deep input"> <button id="deep-btn" onclick="document.getElementById(\'deep-out\').textContent=\'Deep click: \'+document.getElementById(\'deep-input\').value">Click deep</button><p id="deep-out"></p></body>';
+var outer = '<body style="font-family:sans-serif;padding:8px"><b id="outer-title">Outer frame</b><br><iframe id="frame-inner" name="inner-frame" title="Inner frame" style="width:95%;height:120px;border:1px solid #ccc" srcdoc="' + inner.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '"></iframe></body>';
+document.getElementById("frame-outer").srcdoc = outer;
+class FancyCard extends HTMLElement { constructor() { super(); var r = this.attachShadow({ mode: "open" }); r.innerHTML = '<style>.c{border:1px solid #e4e9ef;border-radius:10px;padding:12px;font-family:sans-serif}button{background:#ff6a3d;color:#fff;border:0;border-radius:6px;padding:7px 12px;cursor:pointer}</style><div class="c"><slot name="title">Card</slot><br><input id="sh-input" placeholder="Shadow input"> <button id="sh-btn">Go</button><p id="sh-out"></p></div>'; r.getElementById("sh-btn").onclick = function () { r.getElementById("sh-out").textContent = "Hello, " + r.getElementById("sh-input").value; }; } }
+class SecretCard extends HTMLElement { constructor() { super(); var r = this.attachShadow({ mode: "closed" }); r.innerHTML = '<div style="border:1px dashed #b7c3d0;border-radius:10px;padding:12px;font-family:sans-serif"><button id="secret-btn">Closed root button</button></div>'; } }
+customElements.define("fancy-card", FancyCard); customElements.define("secret-card", SecretCard);
+</script>
+</body></html>

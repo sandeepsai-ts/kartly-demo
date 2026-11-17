@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Windows, tabs and navigation - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Windows, tabs and navigation</nav>
+<section class="demo"><h1 id="page-title">Windows, tabs and navigation</h1><p class="sub">Anything that leaves the current page: new tabs, popups, history entries, hash changes and a changing document title.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Link with <code>target=_blank</code> (<code>#link-blank</code>) and with <code>rel=noopener</code> (<code>#link-noopener</code>): switch to the new window handle.</li><li><code>window.open</code> popup <code>#b-popup</code> (400x300) and a named window reused by a second click.</li><li>History API: <code>pushState</code> buttons change the URL without a reload; test Back and Forward.</li><li>Hash links and <code>hashchange</code>; document title updates; <code>#msg-log</code> shows messages from child windows.</li></ul></details></section>
+<section class="demo"><h2>New tabs and popups</h2><div class="row"><a id="link-blank" class="btn sec" href="lab-window-child.html?msg=blank-link" target="_blank">Open in new tab</a><a id="link-noopener" class="btn sec" href="lab-window-child.html?msg=noopener-link" target="_blank" rel="noopener">New tab (noopener)</a><button class="btn primary" id="b-popup">Open popup window</button><button class="btn sec" id="b-named">Open named window</button></div>
+<div class="log" id="msg-log" data-testid="msg-log" style="margin-top:12px"></div></section>
+<section class="demo"><h2>History and hash</h2><div class="row"><button class="btn sec" id="b-push1">pushState /step-1</button><button class="btn sec" id="b-push2">pushState /step-2</button><button class="btn sec" id="b-back">history.back()</button><button class="btn sec" id="b-fwd">history.forward()</button><a href="#section-b" id="hash-link">Go to #section-b</a><button class="btn sec" id="b-title">Change document title</button></div>
+<div class="result" id="loc" data-testid="location"></div><div style="height:180px"></div><h3 id="section-b">Section B (hash target)</h3></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$;
+function loc() { $("#loc").textContent = "URL: " + location.pathname.split("/").pop() + location.search + location.hash + "  |  title: " + document.title + "  |  history length: " + history.length; }
+$("#b-popup").addEventListener("click", function () { window.open("lab-window-child.html?msg=popup", "popup1", "width=400,height=300"); });
+$("#b-named").addEventListener("click", function () { window.open("lab-window-child.html?msg=named-window", "named-target"); });
+window.addEventListener("message", function (e) { if (e.data && e.data.type === "child-ping") Lab.log("msg-log", "Child says: " + e.data.value); });
+$("#b-push1").addEventListener("click", function () { history.pushState({ s: 1 }, "", "?view=step-1"); loc(); });
+$("#b-push2").addEventListener("click", function () { history.pushState({ s: 2 }, "", "?view=step-2"); loc(); });
+$("#b-back").addEventListener("click", function () { history.back(); }); $("#b-fwd").addEventListener("click", function () { history.forward(); });
+$("#b-title").addEventListener("click", function () { document.title = "Title changed at " + new Date().toLocaleTimeString(); loc(); });
+window.addEventListener("popstate", loc); window.addEventListener("hashchange", loc); loc();
+</script>
+</body></html>

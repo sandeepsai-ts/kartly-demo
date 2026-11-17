@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs"><a href="index.html">Store</a> / <a href="cart.html">Cart</a> / Checkout</nav>
+<div class="layout" style="grid-template-columns:1fr 300px"><section class="panel"><h1 id="page-title">Checkout</h1>
+<div class="stepper" id="stepper"><div class="step on">1 Address</div><div class="step">2 Shipping</div><div class="step">3 Payment</div><div class="step">4 Review</div></div>
+<div id="empty" class="empty" hidden><p>Your cart is empty.</p><a class="btn primary" href="index.html">Back to store</a></div>
+<form id="wiz" novalidate>
+<div data-step="1">
+  <div class="field"><label for="name">Full name</label><input id="name" required autocomplete="name"><div class="field-error" id="e-name"></div></div>
+  <div class="field"><label for="addr">Address</label><input id="addr" required><div class="field-error" id="e-addr"></div></div>
+  <div class="col2"><div class="field"><label for="city">City</label><input id="city" required><div class="field-error" id="e-city"></div></div><div class="field"><label for="zip">ZIP code (5 digits)</label><input id="zip" inputmode="numeric" maxlength="5" required><div class="field-error" id="e-zip"></div></div></div>
+  <div class="field"><label for="country">Country</label><select id="country"><option>United States</option><option>Canada</option><option>United Kingdom</option><option>India</option></select></div>
+</div>
+<div data-step="2" hidden><fieldset style="border:0;padding:0"><legend><b>Shipping method</b></legend>
+  <label class="inline"><input type="radio" name="ship" value="5" checked> Standard (5-7 days) - $5</label><br>
+  <label class="inline"><input type="radio" name="ship" value="15"> Express (1-2 days) - $15</label><br>
+  <label class="inline"><input type="radio" name="ship" value="0"> Store pickup - free</label></fieldset></div>
+<div data-step="3" hidden>
+  <div class="field"><label for="card">Card number</label><input id="card" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="off"><div class="field-error" id="e-card"></div></div>
+  <div class="col2"><div class="field"><label for="exp">Expiry (MM/YY)</label><input id="exp" placeholder="12/30" maxlength="5"><div class="field-error" id="e-exp"></div></div><div class="field"><label for="cvc">CVC</label><input id="cvc" maxlength="4" inputmode="numeric"><div class="field-error" id="e-cvc"></div></div></div>
+  <p class="meta" style="font-size:12px;color:#647282">Test cards: 4242 4242 4242 4242 succeeds, 4000 0000 0000 0002 is declined.</p></div>
+<div data-step="4" hidden><h3 style="margin-top:0">Review your order</h3><div id="review"></div></div>
+<div id="wiz-error" class="result bad" role="alert" hidden></div>
+<div class="row" style="margin-top:16px"><button class="btn sec" type="button" id="back" hidden>Back</button><button class="btn primary" type="submit" id="next">Continue</button></div>
+</form></section>
+<aside class="panel"><h3 style="margin-top:0">Summary</h3><div id="sum"></div></aside></div></main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+if (Kartly.requireAuth()) { Kartly.header();
+var step = 1, shipVal = 5, code = sessionStorage.getItem("kartly_coupon") || "";
+function sum() { var t = Kartly.totals(code, shipVal); document.getElementById("sum").innerHTML = '<div class="sumrow"><span>Subtotal</span><span>' + Kartly.money(t.sub) + '</span></div><div class="sumrow"><span>Discount</span><span>' + (t.discount ? "-" + Kartly.money(t.discount) : "$0") + '</span></div><div class="sumrow"><span>Shipping</span><span>' + (t.ship ? Kartly.money(t.ship) : "Free") + '</span></div><div class="sumrow"><span>Tax</span><span>' + Kartly.money(t.tax) + '</span></div><div class="sumrow tot"><span>Total</span><span id="grand">' + Kartly.money(t.total) + '</span></div>'; return t; }
+function show() {
+  Array.prototype.forEach.call(document.querySelectorAll("[data-step]"), function (d) { d.hidden = +d.getAttribute("data-step") !== step; });
+  Array.prototype.forEach.call(document.querySelectorAll(".step"), function (s, i) { s.className = "step" + (i + 1 === step ? " on" : i + 1 < step ? " done" : ""); });
+  document.getElementById("back").hidden = step === 1; document.getElementById("next").textContent = step === 4 ? "Place order" : "Continue";
+  if (step === 4) { var t = sum(); document.getElementById("review").innerHTML = '<p><b>Ship to:</b> ' + Kartly.esc(v("name")) + ', ' + Kartly.esc(v("addr")) + ', ' + Kartly.esc(v("city")) + ' ' + Kartly.esc(v("zip")) + ', ' + Kartly.esc(v("country")) + '</p><p><b>Items:</b> ' + Kartly.cart().map(function (l) { return Kartly.esc(Kartly.byId(l.id).name) + ' x' + l.qty; }).join("; ") + '</p><p><b>Total:</b> ' + Kartly.money(t.total) + '</p>'; }
+}
+function v(id) { return document.getElementById(id).value.trim(); }
+function err(id, msg) { var e = document.getElementById("e-" + id), i = document.getElementById(id); e.textContent = msg || ""; i.setAttribute("aria-invalid", msg ? "true" : "false"); return !msg; }
+function valid() {
+  if (step === 1) { var a = err("name", v("name") ? "" : "Name is required"), b = err("addr", v("addr") ? "" : "Address is required"), c = err("city", v("city") ? "" : "City is required"), d = err("zip", /^\d{5}$/.test(v("zip")) ? "" : "Enter a 5-digit ZIP code"); return a && b && c && d; }
+  if (step === 3) { var n = v("card").replace(/\s/g, ""); var x = err("card", /^\d{16}$/.test(n) ? "" : "Enter a 16-digit card number"), y = err("exp", /^(0[1-9]|1[0-2])\/\d{2}$/.test(v("exp")) ? "" : "Use MM/YY"), z = err("cvc", /^\d{3,4}$/.test(v("cvc")) ? "" : "Enter the 3 or 4 digit CVC"); return x && y && z; }
+  return true;
+}
+document.getElementById("card").addEventListener("input", function (e) { var d = e.target.value.replace(/\D/g, "").slice(0, 16); e.target.value = d.replace(/(.{4})/g, "$1 ").trim(); });
+document.getElementById("exp").addEventListener("input", function (e) { var d = e.target.value.replace(/\D/g, "").slice(0, 4); e.target.value = d.length > 2 ? d.slice(0, 2) + "/" + d.slice(2) : d; });
+Array.prototype.forEach.call(document.getElementsByName("ship"), function (r) { r.addEventListener("change", function () { shipVal = +r.value; sum(); }); });
+document.getElementById("back").addEventListener("click", function () { if (step > 1) { step--; show(); } });
+document.getElementById("wiz").addEventListener("submit", function (e) {
+  e.preventDefault(); var er = document.getElementById("wiz-error"); er.hidden = true;
+  if (!valid()) return;
+  if (step < 4) { step++; show(); return; }
+  var btn = document.getElementById("next"); btn.disabled = true; btn.textContent = "Processing...";
+  setTimeout(function () {
+    if (v("card").replace(/\s/g, "") === "4000000000000002") { er.hidden = false; er.textContent = "Your card was declined. Try another card."; btn.disabled = false; btn.textContent = "Place order"; step = 3; show(); return; }
+    var t = Kartly.totals(code, shipVal), no = "KT-" + (10500 + Kartly.orders().length + 1);
+    Kartly.saveOrder({ no: no, date: new Date().toISOString().slice(0, 10), items: Kartly.cart().map(function (l) { return Kartly.byId(l.id).name + " x" + l.qty; }).join(", "), total: t.total, status: "Processing" });
+    Kartly.clearCart(); sessionStorage.removeItem("kartly_coupon"); location.href = "confirmation.html?no=" + no;
+  }, 900);
+});
+if (!Kartly.cart().length) { document.getElementById("wiz").hidden = true; document.getElementById("stepper").hidden = true; document.getElementById("empty").hidden = false; }
+sum(); show(); }
+</script></body></html>

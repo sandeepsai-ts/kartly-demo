@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Product - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <span id="crumb">Product</span></nav>
+<div id="notfound" class="empty" hidden><h1 id="page-title-nf">Product not found</h1><p>That product id does not exist.</p><a class="btn primary" href="index.html">Back to store</a></div>
+<section id="detail" class="panel" hidden>
+  <div class="col2">
+    <div><div id="hero-pic" class="card pic" style="height:300px;font-size:120px;display:flex;align-items:center;justify-content:center;border-radius:12px"></div>
+      <div class="row" style="margin-top:10px" id="thumbs"></div></div>
+    <div>
+      <h1 id="page-title" style="font-size:24px"></h1>
+      <div class="stars" id="stars"></div>
+      <div class="price" id="price" style="font-size:28px;margin:8px 0"></div>
+      <p id="stock" class="banner"></p>
+      <p id="desc" class="sub"></p>
+      <div class="row"><span class="qty"><button type="button" id="minus" aria-label="Decrease quantity">-</button><input id="qty" type="number" min="1" value="1" aria-label="Quantity"><button type="button" id="plus" aria-label="Increase quantity">+</button></span>
+        <button class="btn primary" id="add" type="button">Add to cart</button><a class="btn sec" href="cart.html" id="go-cart">View cart</a></div>
+      <div id="added" class="result" role="status" hidden></div>
+    </div>
+  </div>
+  <div style="margin-top:22px"><div class="tabs" role="tablist" aria-label="Product details"><button class="tab" role="tab" id="t1" aria-selected="true" aria-controls="p1">Description</button><button class="tab" role="tab" id="t2" aria-selected="false" aria-controls="p2" tabindex="-1">Specs</button><button class="tab" role="tab" id="t3" aria-selected="false" aria-controls="p3" tabindex="-1">Reviews (3)</button></div>
+  <div class="tabpanel" id="p1" role="tabpanel" aria-labelledby="t1"></div>
+  <div class="tabpanel" id="p2" role="tabpanel" aria-labelledby="t2" hidden><table><tr><th>Category</th><td id="s-cat"></td></tr><tr><th>SKU</th><td id="s-sku"></td></tr><tr><th>In stock</th><td id="s-stock"></td></tr></table></div>
+  <div class="tabpanel" id="p3" role="tabpanel" aria-labelledby="t3" hidden><p><b>Sam</b> ★★★★★ Great value, arrived fast.</p><p><b>Priya</b> ★★★★☆ Good, but the box was dented.</p><p><b>Lee</b> ★★★☆☆ Does the job.</p></div></div>
+</section></main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+var id = new URLSearchParams(location.search).get("id"), p = Kartly.byId(id);
+if (!p) { document.getElementById("notfound").hidden = false; document.title = "Not found - Kartly"; }
+else {
+  document.getElementById("detail").hidden = false; document.title = p.name + " - Kartly";
+  document.getElementById("crumb").textContent = p.name;
+  document.getElementById("page-title").textContent = p.name;
+  document.getElementById("hero-pic").style.background = p.bg; document.getElementById("hero-pic").textContent = p.emoji;
+  document.getElementById("thumbs").innerHTML = [p.emoji, p.emoji + p.emoji, "📦"].map(function (e, i) { return '<button type="button" class="chip" data-thumb="' + i + '" aria-label="Image ' + (i + 1) + '">' + e + '</button>'; }).join("");
+  document.getElementById("thumbs").addEventListener("click", function (e) { var i = e.target.getAttribute("data-thumb"); if (i !== null) document.getElementById("hero-pic").textContent = [p.emoji, p.emoji + p.emoji, "📦"][i]; });
+  document.getElementById("stars").textContent = Kartly.stars(p.rating) + " " + p.rating;
+  document.getElementById("price").innerHTML = Kartly.money(p.price) + (p.was > p.price ? ' <s style="font-size:16px;color:#647282">' + Kartly.money(p.was) + '</s>' : "");
+  var st = document.getElementById("stock"); st.textContent = p.stock < 1 ? "Out of stock" : (p.stock < 5 ? "Only " + p.stock + " left" : "In stock"); st.className = "banner " + (p.stock < 1 ? "warn" : p.stock < 5 ? "warn" : "good");
+  document.getElementById("desc").textContent = p.desc; document.getElementById("p1").textContent = p.desc;
+  document.getElementById("s-cat").textContent = p.cat; document.getElementById("s-sku").textContent = "KT-" + (1000 + p.id); document.getElementById("s-stock").textContent = p.stock;
+  var q = document.getElementById("qty"), add = document.getElementById("add");
+  if (p.stock < 1) { add.disabled = true; q.disabled = true; document.getElementById("minus").disabled = true; document.getElementById("plus").disabled = true; add.textContent = "Sold out"; }
+  q.max = p.stock;
+  document.getElementById("minus").addEventListener("click", function () { q.value = Math.max(1, +q.value - 1); });
+  document.getElementById("plus").addEventListener("click", function () { q.value = Math.min(p.stock, +q.value + 1); });
+  add.addEventListener("click", function () {
+    var n = Math.max(1, Math.floor(+q.value || 1)); var r = document.getElementById("added"); r.hidden = false;
+    if (n > p.stock) { r.className = "result bad"; r.textContent = "Only " + p.stock + " available."; return; }
+    Kartly.addToCart(p.id, n); r.className = "result ok"; r.textContent = "Added " + n + " to cart.";
+  });
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  function pick(t) { tabs.forEach(function (x) { var on = x === t; x.setAttribute("aria-selected", on); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute("aria-controls")).hidden = !on; }); t.focus(); }
+  tabs.forEach(function (t, i) { t.addEventListener("click", function () { pick(t); }); t.addEventListener("keydown", function (e) { if (e.key === "ArrowRight") pick(tabs[(i + 1) % 3]); if (e.key === "ArrowLeft") pick(tabs[(i + 2) % 3]); }); });
+}
+</script></body></html>

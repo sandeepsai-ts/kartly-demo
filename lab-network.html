@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Network and console - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Network and console</nav>
+<section class="demo"><h1 id="page-title">Network and console</h1><p class="sub">Requests that succeed, fail, hang or retry, and errors that only show up in the browser console.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>GET <code>data.json</code> returns 200 with JSON; GET <code>missing.json</code> returns 404.</li><li>Slow request (3 s) with a 2 s abort timeout: the page shows a timeout message.</li><li>Retry demo fails twice and then succeeds on the third attempt.</li><li>Offline simulation makes every request in this page fail; the banner reflects <code>navigator.onLine</code>.</li><li>Console buttons log, warn, error, throw an uncaught exception and an unhandled promise rejection; <code>#console-log</code> mirrors them.</li></ul></details></section>
+<section class="demo"><h2>Requests</h2><div class="row"><button class="btn primary" id="r-ok">GET data.json (200)</button><button class="btn sec" id="r-404">GET missing.json (404)</button><button class="btn sec" id="r-slow">Slow request (3 s, 2 s timeout)</button><button class="btn sec" id="r-retry">Retry until success</button><label class="inline">Simulate offline <span class="switch"><input type="checkbox" id="offline" role="switch"><span></span></span></label></div>
+<div id="net-status" class="banner info" role="status"></div><pre class="log" id="net-result" data-testid="net-result"></pre><div class="sub" id="req-count">Requests made: 0</div></section>
+<section class="demo"><h2>Console and errors</h2><div class="row"><button class="btn sec" id="c-log">console.log</button><button class="btn sec" id="c-warn">console.warn</button><button class="btn sec" id="c-error">console.error</button><button class="btn danger" id="c-throw">Throw uncaught error</button><button class="btn danger" id="c-reject">Unhandled promise rejection</button></div><div class="log" id="console-log" data-testid="console-log" style="margin-top:10px"></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$, reqs = 0, offline = false;
+function netStatus() { $("#net-status").textContent = (navigator.onLine && !offline) ? "Online" : "Offline (requests will fail)"; $("#net-status").className = "banner " + ((navigator.onLine && !offline) ? "good" : "warn"); }
+window.addEventListener("online", netStatus); window.addEventListener("offline", netStatus); netStatus();
+$("#offline").addEventListener("change", function (e) { offline = e.target.checked; netStatus(); });
+function req(url, opts) { reqs++; $("#req-count").textContent = "Requests made: " + reqs; if (offline) return Promise.reject(new TypeError("Failed to fetch (simulated offline)")); return fetch(url + (url.indexOf("?") > -1 ? "&" : "?") + "t=" + Date.now(), opts); }
+function out(s, bad) { $("#net-result").textContent = s; $("#net-result").style.color = bad ? "#fca5a5" : ""; }
+$("#r-ok").addEventListener("click", function () { out("Loading..."); req("data.json").then(function (r) { return r.json().then(function (j) { out("HTTP " + r.status + "\n" + JSON.stringify(j, null, 2)); }); }, function (e) { out("Network error: " + e.message, true); }); });
+$("#r-404").addEventListener("click", function () { out("Loading..."); req("missing.json").then(function (r) { out("HTTP " + r.status + " " + (r.statusText || "Not Found"), r.status >= 400); }, function (e) { out("Network error: " + e.message, true); }); });
+$("#r-slow").addEventListener("click", function () { out("Waiting up to 2 s..."); var c = new AbortController(), t = setTimeout(function () { c.abort(); }, 2000);
+  Lab.sleep(3000).then(function () { return req("data.json", { signal: c.signal }); }).then(function (r) { clearTimeout(t); out("HTTP " + r.status + " (should not be reached before abort)"); }, function (e) { clearTimeout(t); out("Request failed: " + (e.name === "AbortError" ? "timed out after 2 s" : e.message), true); }); });
+$("#r-retry").addEventListener("click", function () { var attempt = 0; function go() { attempt++; out("Attempt " + attempt + "..."); Lab.sleep(500).then(function () { if (attempt < 3) { out("Attempt " + attempt + " failed (503). Retrying...", true); return Lab.sleep(500).then(go); } return req("data.json").then(function (r) { out("Succeeded on attempt " + attempt + " with HTTP " + r.status); }, function (e) { out("Network error: " + e.message, true); }); }); } go(); });
+function clog(level, msg) { console[level](msg); Lab.log("console-log", level.toUpperCase() + ": " + msg); }
+$("#c-log").addEventListener("click", function () { clog("log", "Hello from console.log"); }); $("#c-warn").addEventListener("click", function () { clog("warn", "This is a warning"); }); $("#c-error").addEventListener("click", function () { clog("error", "This is an error message"); });
+window.addEventListener("error", function (e) { Lab.log("console-log", "UNCAUGHT: " + e.message); }); window.addEventListener("unhandledrejection", function (e) { Lab.log("console-log", "UNHANDLED REJECTION: " + (e.reason && e.reason.message ? e.reason.message : e.reason)); });
+$("#c-throw").addEventListener("click", function () { setTimeout(function () { throw new Error("Deliberate uncaught error"); }, 0); }); $("#c-reject").addEventListener("click", function () { Promise.reject(new Error("Deliberate unhandled rejection")); });
+</script>
+</body></html>

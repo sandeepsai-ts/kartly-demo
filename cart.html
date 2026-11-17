@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cart - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs"><a href="index.html">Store</a> / Cart</nav>
+<div class="layout" style="grid-template-columns:1fr 320px">
+<section class="panel"><h1 id="page-title">Your cart</h1><div id="lines"></div><div id="empty" class="empty" hidden><p>Your cart is empty.</p><a class="btn primary" href="index.html" id="keep-shopping">Keep shopping</a></div></section>
+<aside class="panel"><h3 style="margin-top:0">Order summary</h3>
+<div class="row" style="flex-wrap:nowrap"><input id="coupon" type="text" placeholder="Coupon code" aria-label="Coupon code" autocomplete="off"><button class="btn sec" id="apply" type="button">Apply</button></div>
+<div id="coupon-msg" class="result" role="status" hidden></div>
+<div class="sumrow"><span>Subtotal</span><span id="sub"></span></div><div class="sumrow"><span>Discount</span><span id="disc"></span></div><div class="sumrow"><span>Shipping</span><span id="ship"></span></div><div class="sumrow"><span>Tax (8%)</span><span id="tax"></span></div><div class="sumrow tot"><span>Total</span><span id="total" data-testid="total"></span></div>
+<a class="btn primary" id="checkout" href="checkout.html" style="display:block;text-align:center;margin-top:12px">Checkout</a>
+<p class="meta" style="font-size:12px;color:#647282">Try: SAVE10, BIG50 (needs $200), FREESHIP, EXPIRED</p></aside></div></main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+var code = sessionStorage.getItem("kartly_coupon") || "";
+function draw() {
+  var c = Kartly.cart(), box = document.getElementById("lines");
+  document.getElementById("empty").hidden = c.length > 0; document.getElementById("checkout").style.display = c.length ? "block" : "none";
+  box.innerHTML = c.length ? '<table><tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr>' + c.map(function (l) { var p = Kartly.byId(l.id);
+    return '<tr data-line="' + p.id + '"><td>' + p.emoji + ' <a href="product.html?id=' + p.id + '">' + Kartly.esc(p.name) + '</a></td><td>' + Kartly.money(p.price) + '</td><td><span class="qty"><button type="button" data-dec="' + p.id + '" aria-label="Decrease">-</button><input type="number" min="1" max="' + p.stock + '" value="' + l.qty + '" data-qty="' + p.id + '" aria-label="Quantity for ' + Kartly.esc(p.name) + '"><button type="button" data-inc="' + p.id + '" aria-label="Increase">+</button></span></td><td>' + Kartly.money(p.price * l.qty) + '</td><td><button class="btn sec" type="button" data-rm="' + p.id + '">Remove</button></td></tr>'; }).join("") + '</table>' : "";
+  var t = Kartly.totals(code);
+  document.getElementById("sub").textContent = Kartly.money(t.sub); document.getElementById("disc").textContent = t.discount ? "-" + Kartly.money(t.discount) : "$0";
+  document.getElementById("ship").textContent = t.ship ? Kartly.money(t.ship) : "Free"; document.getElementById("tax").textContent = Kartly.money(t.tax); document.getElementById("total").textContent = Kartly.money(t.total);
+  var m = document.getElementById("coupon-msg"); m.hidden = !code; m.textContent = t.msg; m.className = "result " + (t.ok ? "ok" : "bad");
+  Kartly.renderBadge();
+}
+document.getElementById("lines").addEventListener("click", function (e) { var t = e.target;
+  var d = t.getAttribute("data-dec"), i = t.getAttribute("data-inc"), r = t.getAttribute("data-rm");
+  var cur = function (id) { return Kartly.cart().filter(function (l) { return l.id === +id; })[0].qty; };
+  if (d) Kartly.setQty(d, cur(d) - 1); if (i) Kartly.setQty(i, cur(i) + 1); if (r) Kartly.removeLine(r); if (d || i || r) draw(); });
+document.getElementById("lines").addEventListener("change", function (e) { var id = e.target.getAttribute("data-qty"); if (id) { Kartly.setQty(id, Math.floor(+e.target.value || 1)); draw(); } });
+document.getElementById("apply").addEventListener("click", function () { code = document.getElementById("coupon").value.trim(); sessionStorage.setItem("kartly_coupon", code); draw(); });
+document.getElementById("coupon").value = code; draw();
+</script></body></html>

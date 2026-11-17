@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Lab - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Test Lab</nav>
+<section class="demo"><h1 id="page-title">Test Lab</h1><p class="sub">A practice area for web test automation. Every page has stable <code>data-testid</code> attributes, and each demo lists the edge cases it contains.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Use the search box and tag chips (itself a filtering widget) to find a topic.</li><li>Pages are plain static HTML and need no backend, so they run on any host, including cloud browsers.</li><li>Demo login for protected pages: <code>demo_shopper</code> / <code>Demo-Only-2026</code>.</li></ul></details></section>
+<section class="demo"><div class="row"><input id="lab-search" type="search" placeholder="Filter topics (try: iframe, cookies, waits)" aria-label="Filter topics" style="max-width:380px"><span id="lab-count" class="sub" aria-live="polite"></span></div>
+<div id="lab-tags" style="margin-top:12px"></div></section>
+<div class="labgrid" id="lab-grid"></div><div class="empty" id="lab-empty" hidden>No topics match your filter.</div>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var tags = {}; Lab.topics.forEach(function (t) { t[3].forEach(function (g) { tags[g] = 1; }); });
+var active = "";
+function draw() {
+  var q = document.getElementById("lab-search").value.toLowerCase();
+  var list = Lab.topics.filter(function (t) { return (!active || t[3].indexOf(active) > -1) && (!q || (t[1] + " " + t[2] + " " + t[3].join(" ")).toLowerCase().indexOf(q) > -1); });
+  document.getElementById("lab-grid").innerHTML = list.map(function (t) { return '<a class="labcard" href="' + t[0] + '" data-testid="topic-' + t[0].replace(".html", "") + '"><b>' + t[1] + '</b><p>' + t[2] + '</p><div class="tags">' + t[3].map(function (g) { return "<span>" + g + "</span>"; }).join("") + '</div></a>'; }).join("");
+  document.getElementById("lab-empty").hidden = list.length > 0; document.getElementById("lab-count").textContent = list.length + " of " + Lab.topics.length + " topics";
+  document.getElementById("lab-tags").innerHTML = '<button type="button" class="chip' + (active ? "" : " on") + '" data-tag="">all</button>' + Object.keys(tags).sort().map(function (g) { return '<button type="button" class="chip' + (g === active ? " on" : "") + '" data-tag="' + g + '">' + g + '</button>'; }).join("");
+}
+document.getElementById("lab-search").addEventListener("input", draw);
+document.getElementById("lab-tags").addEventListener("click", function (e) { var g = e.target.getAttribute("data-tag"); if (g !== null) { active = g; draw(); } });
+draw();
+</script>
+</body></html>

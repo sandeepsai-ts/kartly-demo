@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Files: upload and download - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Files: upload and download</nav>
+<section class="demo"><h1 id="page-title">Files: upload and download</h1><p class="sub">File inputs, drag-drop zones, previews and generated downloads.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li><code>#file-single</code>, <code>#file-multi</code> (multiple) and <code>#file-image</code> (accept=image/*): attach with the framework's upload API, never the native dialog.</li><li>Drop zone <code>#dropzone</code> also accepts files dragged from the desktop.</li><li>Simulated upload progress bar finishes in about 2 seconds.</li><li>Downloads are generated in the browser: <code>#dl-txt</code>, <code>#dl-csv</code>, <code>#dl-json</code> (Blob URLs with a download name).</li></ul></details></section>
+<section class="demo"><h2>Upload</h2><div class="col2"><div class="field"><label for="file-single">Single file</label><input id="file-single" type="file"></div><div class="field"><label for="file-multi">Multiple files</label><input id="file-multi" type="file" multiple></div>
+<div class="field"><label for="file-image">Image (accept=image/*)</label><input id="file-image" type="file" accept="image/*"></div><div><div class="dropzone" id="dropzone" tabindex="0">Drop files here</div></div></div>
+<div id="file-list" class="result" data-testid="file-list">No files chosen.</div><img id="preview" alt="Preview of the chosen image" style="max-width:180px;display:none;margin-top:8px;border-radius:8px"><div class="progress" style="margin-top:10px"><i id="bar"></i></div><button class="btn primary" id="b-upload" style="margin-top:10px">Start upload</button><div id="up-result" class="result"></div></section>
+<section class="demo"><h2>Download</h2><div class="row"><a class="btn sec" id="dl-txt" href="#" download="sample.txt">Download .txt</a><a class="btn sec" id="dl-csv" href="#" download="products.csv">Download .csv</a><a class="btn sec" id="dl-json" href="#" download="products.json">Download .json</a></div><div id="dl-result" class="result"></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$, files = [];
+function show(list) { files = Array.prototype.slice.call(list); $("#file-list").textContent = files.length ? files.map(function (f) { return f.name + " (" + f.size + " bytes, " + (f.type || "unknown type") + ")"; }).join("\n") : "No files chosen."; $("#file-list").style.whiteSpace = "pre-wrap"; }
+["file-single", "file-multi"].forEach(function (id) { $("#" + id).addEventListener("change", function (e) { show(e.target.files); }); });
+$("#file-image").addEventListener("change", function (e) { show(e.target.files); var f = e.target.files[0], img = $("#preview"); if (f && /^image\//.test(f.type)) { var r = new FileReader(); r.onload = function () { img.src = r.result; img.style.display = "block"; }; r.readAsDataURL(f); } else { img.style.display = "none"; if (f) Lab.set("up-result", "Not an image: " + f.type, "bad"); } });
+var dz = $("#dropzone"); ["dragenter", "dragover"].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add("over"); }); }); ["dragleave", "drop"].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove("over"); }); });
+dz.addEventListener("drop", function (e) { show(e.dataTransfer.files); });
+$("#b-upload").addEventListener("click", function () { if (!files.length) { Lab.set("up-result", "Choose a file first", "bad"); return; } var p = 0; Lab.set("up-result", "Uploading..."); var t = setInterval(function () { p += 10; $("#bar").style.width = p + "%"; if (p >= 100) { clearInterval(t); Lab.set("up-result", "Uploaded " + files.length + " file(s)", "ok"); } }, 200); });
+function dl(id, text, type) { var a = $("#" + id); a.href = URL.createObjectURL(new Blob([text], { type: type })); a.addEventListener("click", function () { Lab.set("dl-result", "Download started: " + a.getAttribute("download"), "ok"); }); }
+var rowsCsv = "id,name,price\n" + Kartly.products.map(function (p) { return p.id + ',"' + p.name.replace(/"/g, '""') + '",' + p.price; }).join("\n");
+dl("dl-txt", "Kartly sample download\nLine two", "text/plain"); dl("dl-csv", rowsCsv, "text/csv"); dl("dl-json", JSON.stringify(Kartly.products.map(function (p) { return { id: p.id, name: p.name, price: p.price }; }), null, 2), "application/json");
+</script>
+</body></html>

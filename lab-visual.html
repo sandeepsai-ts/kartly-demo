@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visual and media - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Visual and media</nav>
+<section class="demo"><h1 id="page-title">Visual and media</h1><p class="sub">Images, canvas, SVG and layout edge cases that DOM text assertions cannot see.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Broken image (<code>#img-broken</code>, alt text shown), lazy image far below the fold, inline SVG with clickable shapes.</li><li>Canvas drawing with the pointer: assert pixels or use visual comparison; <code>#clear-canvas</code> resets it.</li><li>Infinite CSS animation and a pausable pulse: wait for stability, or pause animations.</li><li>Carousel auto-advances every 4 s; use the next and previous buttons for determinism.</li><li>Overlapping element: <code>#covered-btn</code> sits under an overlay (click intercepted).</li><li>Text edge cases: ellipsis, very long unbroken word, emoji, combining characters, RTL text.</li></ul></details></section>
+<section class="demo"><h2>Images and SVG</h2><div class="row"><img id="img-ok" alt="Inline orange square" width="80" height="80" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' rx='12' fill='%23ff6a3d'/%3E%3C/svg%3E"><img id="img-broken" alt="Broken image: file does not exist" src="does-not-exist.png" width="160" height="60" style="border:1px dashed #b7c3d0">
+<svg id="svg-map" width="260" height="90" role="img" aria-label="Clickable shapes"><circle id="svg-circle" cx="40" cy="45" r="30" fill="#1f9d63"/><rect id="svg-rect" x="90" y="15" width="70" height="60" rx="8" fill="#3b82f6"/><polygon id="svg-tri" points="210,75 240,15 270,75" fill="#f59e0b"/></svg></div><div id="svg-result" class="result">Click a shape.</div>
+<div style="height:600px" class="sub">Scroll down for a lazy image...</div><img id="img-lazy" loading="lazy" alt="Lazy loaded square" width="80" height="80" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle cx='40' cy='40' r='38' fill='%233b82f6'/%3E%3C/svg%3E"></section>
+<section class="demo"><h2>Canvas</h2><canvas id="paint" width="420" height="160" style="border:1px solid #e4e9ef;border-radius:8px;touch-action:none;max-width:100%" aria-label="Drawing canvas"></canvas><div class="row" style="margin-top:8px"><button class="btn sec" id="clear-canvas">Clear</button><span id="paint-info" class="sub">Draw with the mouse</span></div></section>
+<section class="demo"><h2>Animation, carousel and overlap</h2><div class="row"><div class="spinner" aria-label="Endless spinner"></div><span class="pulse" id="pulse">Pulsing text</span><label class="inline"><input type="checkbox" id="pause-anim"> Pause animations</label></div>
+<div class="carousel" id="carousel" style="margin-top:12px" role="region" aria-label="Offers"><div class="slide on">Slide 1: Free shipping</div><div class="slide">Slide 2: New arrivals</div><div class="slide">Slide 3: Clearance</div></div><div class="row" style="margin-top:8px"><button class="btn sec" id="c-prev">Previous</button><button class="btn sec" id="c-next">Next</button><span id="c-pos" class="sub">1 / 3</span></div>
+<div class="row" style="margin-top:12px"><span class="cover"><button class="btn primary" id="covered-btn">Covered button</button></span><span id="covered-result" class="result" style="margin:0">Not clicked</span></div></section>
+<section class="demo"><h2>Text edge cases</h2><div class="ellipsis" id="ellipsis">This sentence is much too long to fit in its container and is truncated with an ellipsis</div><p id="longword" style="max-width:260px;word-break:break-all">Pneumonoultramicroscopicsilicovolcanoconiosis_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</p>
+<p id="emoji">Emoji and symbols: 🎉 👩‍💻 ✓ ™ © ½ — "quotes" 'single' &amp; ampersand</p><p id="combining">Combining: e&#769; (e + accent) vs &eacute; (single char), Ångström, İstanbul, naïve café</p><p id="rtl" dir="rtl" lang="ar">مرحبا بكم في المتجر - النص من اليمين إلى اليسار</p></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$;
+[["svg-circle", "circle"], ["svg-rect", "rectangle"], ["svg-tri", "triangle"]].forEach(function (s) { $("#" + s[0]).addEventListener("click", function () { Lab.set("svg-result", "Clicked the " + s[1], "ok"); }); });
+var cv = $("#paint"), ctx = cv.getContext("2d"), down = false; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#ff6a3d";
+function pos(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; }
+cv.addEventListener("pointerdown", function (e) { down = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p[0], p[1]); cv.setPointerCapture(e.pointerId); });
+cv.addEventListener("pointermove", function (e) { if (!down) return; var p = pos(e); ctx.lineTo(p[0], p[1]); ctx.stroke(); $("#paint-info").textContent = "Last point: " + Math.round(p[0]) + ", " + Math.round(p[1]); });
+cv.addEventListener("pointerup", function () { down = false; }); $("#clear-canvas").addEventListener("click", function () { ctx.clearRect(0, 0, cv.width, cv.height); $("#paint-info").textContent = "Cleared"; });
+$("#pause-anim").addEventListener("change", function (e) { document.body.classList.toggle("nomotion", e.target.checked); });
+var slides = Lab.$$(".slide"), idx = 0; function show(i) { idx = (i + slides.length) % slides.length; slides.forEach(function (s, k) { s.classList.toggle("on", k === idx); }); $("#c-pos").textContent = (idx + 1) + " / " + slides.length; }
+$("#c-next").addEventListener("click", function () { show(idx + 1); }); $("#c-prev").addEventListener("click", function () { show(idx - 1); }); setInterval(function () { show(idx + 1); }, 4000);
+$("#covered-btn").addEventListener("click", function () { Lab.set("covered-result", "Covered button clicked", "ok"); });
+</script>
+</body></html>

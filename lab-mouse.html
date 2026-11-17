@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mouse, keyboard and clipboard - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Mouse, keyboard and clipboard</nav>
+<section class="demo"><h1 id="page-title">Mouse, keyboard and clipboard</h1><p class="sub">Pointer gestures and keyboard events that simple click-and-type automation does not cover.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Hover menu opens on mouse over or keyboard focus; tooltip appears after hover.</li><li>Double click counter <code>#dbl-count</code>, right click custom menu <code>#ctx-pad</code>, long press (hold 1 s) <code>#hold-btn</code>.</li><li>Drag and drop: HTML5 (<code>#dnd-a</code> to <code>#dnd-b</code>) and a pointer-driven draggable box <code>#drag-box</code>.</li><li>Key logger <code>#key-log</code> records key, code and modifiers; <kbd>Ctrl/Cmd+K</kbd> opens a search box.</li><li>Clipboard: copy a value and paste into a textarea; contenteditable editor with a bold button.</li></ul></details></section>
+<section class="demo"><h2>Hover, tooltip, double and right click, long press</h2><div class="row">
+ <div class="menu" id="hover-menu"><button class="btn sec" aria-haspopup="true">Hover for menu</button><div class="pop"><a href="#" id="m-one">First action</a><a href="#" id="m-two">Second action</a></div></div>
+ <span class="tip" tabindex="0" data-tip="Tooltip text" id="tip">Hover or focus me</span>
+ <button class="btn sec" id="dbl">Double click me</button><span id="dbl-count" class="result" style="margin:0">0 double clicks</span>
+ <button class="btn sec" id="hold-btn">Press and hold 1 s</button><span id="hold-result" class="result" style="margin:0">Not held</span></div>
+<div class="pad" id="ctx-pad" style="margin-top:12px">Right click here</div><div class="ctx" id="ctx"><div id="ctx-copy">Copy</div><div id="ctx-paste">Paste</div><div id="ctx-delete">Delete</div></div><div id="mouse-result" class="result"></div></section>
+<section class="demo"><h2>Drag and drop</h2><div class="col3"><div><b>List A</b><div class="dnd-zone" id="dnd-a"><div class="dnd-item" draggable="true" id="card1">Card 1</div><div class="dnd-item" draggable="true" id="card2">Card 2</div></div></div><div><b>List B</b><div class="dnd-zone" id="dnd-b"></div></div>
+<div><b>Pointer drag</b><div class="pad" id="drag-area" style="position:relative;height:130px"><div id="drag-box" style="position:absolute;left:10px;top:10px;width:50px;height:50px;background:var(--brand);border-radius:8px;cursor:grab;touch-action:none"></div></div><div id="drag-pos" class="result"></div></div></div><div id="dnd-result" class="result"></div></section>
+<section class="demo"><h2>Keyboard</h2><input id="key-input" type="text" placeholder="Type here, use arrows, Tab, Escape, Ctrl+K"><div class="log" id="key-log" data-testid="key-log" style="margin-top:8px"></div>
+<dialog id="kdlg"><h3 style="margin-top:0">Quick search</h3><input id="kq" type="search" placeholder="Search..." aria-label="Quick search"><p class="sub">Press Escape to close.</p></dialog></section>
+<section class="demo"><h2>Clipboard and contenteditable</h2><div class="row"><input id="copy-src" type="text" value="Text to copy 123" aria-label="Source"><button class="btn sec" id="b-copy">Copy</button><button class="btn sec" id="b-paste">Paste from clipboard</button></div><textarea id="paste-area" rows="2" aria-label="Paste area" style="margin-top:8px"></textarea><div id="clip-result" class="result"></div>
+<div class="row" style="margin-top:10px"><button class="btn sec" id="b-bold" type="button">Bold</button></div><div id="editor" contenteditable="true" role="textbox" aria-label="Rich text editor" style="border:1.5px solid #e4e9ef;border-radius:8px;padding:10px;min-height:60px">Edit <i>this</i> text.</div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$;
+$("#m-one").addEventListener("click", function (e) { e.preventDefault(); Lab.set("mouse-result", "Menu: first action", "ok"); }); $("#m-two").addEventListener("click", function (e) { e.preventDefault(); Lab.set("mouse-result", "Menu: second action", "ok"); });
+var dc = 0; $("#dbl").addEventListener("dblclick", function () { dc++; $("#dbl-count").textContent = dc + " double click" + (dc > 1 ? "s" : ""); });
+var ht; $("#hold-btn").addEventListener("pointerdown", function () { ht = setTimeout(function () { Lab.set("hold-result", "Held for 1 second", "ok"); }, 1000); }); ["pointerup", "pointerleave"].forEach(function (ev) { $("#hold-btn").addEventListener(ev, function () { clearTimeout(ht); }); });
+var ctx = $("#ctx"); $("#ctx-pad").addEventListener("contextmenu", function (e) { e.preventDefault(); ctx.style.left = e.clientX + "px"; ctx.style.top = e.clientY + "px"; ctx.style.display = "block"; });
+document.addEventListener("click", function () { ctx.style.display = "none"; }); ["Copy", "Paste", "Delete"].forEach(function (n) { $("#ctx-" + n.toLowerCase()).addEventListener("click", function () { Lab.set("mouse-result", "Context menu: " + n, "ok"); }); });
+Lab.$$(".dnd-item").forEach(function (it) { it.addEventListener("dragstart", function (e) { e.dataTransfer.setData("text/plain", it.id); }); });
+["dnd-a", "dnd-b"].forEach(function (id) { var z = $("#" + id); z.addEventListener("dragover", function (e) { e.preventDefault(); z.style.borderColor = "#ff6a3d"; }); z.addEventListener("dragleave", function () { z.style.borderColor = ""; }); z.addEventListener("drop", function (e) { e.preventDefault(); z.style.borderColor = ""; var el = document.getElementById(e.dataTransfer.getData("text/plain")); if (el) { z.appendChild(el); Lab.set("dnd-result", el.textContent + " dropped into " + (id === "dnd-a" ? "List A" : "List B"), "ok"); } }); });
+var box = $("#drag-box"), dragging = false, ox = 0, oy = 0;
+box.addEventListener("pointerdown", function (e) { dragging = true; ox = e.clientX - box.offsetLeft; oy = e.clientY - box.offsetTop; box.setPointerCapture(e.pointerId); });
+box.addEventListener("pointermove", function (e) { if (!dragging) return; var a = $("#drag-area"); var x = Math.max(0, Math.min(a.clientWidth - 50, e.clientX - ox)), y = Math.max(0, Math.min(a.clientHeight - 50, e.clientY - oy)); box.style.left = x + "px"; box.style.top = y + "px"; $("#drag-pos").textContent = "x=" + Math.round(x) + " y=" + Math.round(y); });
+box.addEventListener("pointerup", function () { dragging = false; });
+$("#key-input").addEventListener("keydown", function (e) { Lab.log("key-log", "keydown key=" + JSON.stringify(e.key) + " code=" + e.code + (e.ctrlKey ? " +ctrl" : "") + (e.metaKey ? " +meta" : "") + (e.shiftKey ? " +shift" : "") + (e.altKey ? " +alt" : "")); });
+document.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); $("#kdlg").showModal(); $("#kq").focus(); } });
+$("#b-copy").addEventListener("click", function () { var v = $("#copy-src").value; (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject(new Error("no clipboard"))).then(function () { Lab.set("clip-result", "Copied: " + v, "ok"); }, function (e) { Lab.set("clip-result", "Clipboard blocked: " + e.message, "bad"); }); });
+$("#b-paste").addEventListener("click", function () { (navigator.clipboard && navigator.clipboard.readText ? navigator.clipboard.readText() : Promise.reject(new Error("no clipboard"))).then(function (t) { $("#paste-area").value = t; Lab.set("clip-result", "Pasted " + t.length + " characters", "ok"); }, function (e) { Lab.set("clip-result", "Paste blocked: " + e.message + " (use Ctrl+V in the box)", "bad"); }); });
+$("#b-bold").addEventListener("click", function () { $("#editor").focus(); document.execCommand("bold"); });
+</script>
+</body></html>

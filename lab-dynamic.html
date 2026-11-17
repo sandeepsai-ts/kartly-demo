@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dynamic content and waits - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Dynamic content and waits</nav>
+<section class="demo"><h1 id="page-title">Dynamic content and waits</h1><p class="sub">Timing is the biggest source of flaky tests. Each demo changes the page after a delay, on purpose.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li><b>Late element</b>: <code>#late-el</code> is added to the DOM after the chosen delay (not just made visible).</li><li><b>Hidden then shown</b>: <code>#hidden-el</code> is in the DOM from the start but <code>display:none</code>.</li><li><b>Disappearing</b>: <code>#vanish-el</code> is removed after 4 seconds.</li><li><b>Random ids</b>: the button id changes on every load; use the <code>data-testid</code> value <code>rand-btn</code>.</li><li><b>Stale element</b>: <code>#rerender-btn</code> is replaced with a new node every 2 seconds.</li><li><b>Overlay</b>: a spinner covers the page for 2 seconds after Submit and intercepts clicks.</li><li><b>Flaky action</b>: choose a failure rate; run it many times.</li><li><b>Moving target</b>: the button slides left and right continuously.</li></ul></details></section>
+<section class="demo"><h2>Element appears after a delay</h2><div class="row"><label class="inline">Delay <select id="delay"><option value="1000">1 s</option><option value="3000" selected>3 s</option><option value="6000">6 s</option></select></label><button class="btn primary" id="b-late">Add element</button><button class="btn sec" id="b-reveal">Reveal hidden element</button></div>
+<div id="late-box" class="result" style="min-height:40px"></div><div id="hidden-el" class="result ok" style="display:none" data-testid="hidden-el">I was hidden, now visible.</div></section>
+<section class="demo"><h2>Disappearing and stale elements</h2><div class="row"><span id="vanish-wrap"><button class="btn sec" id="vanish-el">I disappear in 4 s</button></span><button class="btn sec" id="b-vanish">Restart</button><span id="rerender-wrap"></span><span id="rerender-count" class="sub"></span></div></section>
+<section class="demo"><h2>Random identifiers</h2><div class="row"><button class="btn sec" id="rand-btn-holder" data-testid="rand-btn">Button with a random id</button><span id="rand-info" class="sub"></span></div></section>
+<section class="demo"><h2>Blocking spinner</h2><div class="row"><button class="btn primary" id="b-submit">Submit (shows spinner)</button><span class="result" id="submit-result" style="margin:0">Idle</span></div><div id="spin" class="overlay" hidden aria-label="Loading"><div class="spinner"></div></div></section>
+<section class="demo"><h2>Flaky action</h2><div class="row"><label class="inline">Failure rate <select id="rate"><option value="0">0%</option><option value="30" selected>30%</option><option value="70">70%</option><option value="100">100%</option></select></label><button class="btn primary" id="b-flaky">Run action</button></div><div id="flaky-result" class="result" data-testid="flaky-result"></div><div class="sub" id="flaky-stats"></div></section>
+<section class="demo"><h2>Moving target and live ticker</h2><div style="height:60px"><button class="btn primary moving" id="b-move">Catch me</button></div><div id="move-result" class="result"></div><div class="result" id="ticker" aria-live="off"></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$;
+$("#b-late").addEventListener("click", function () { var d = +$("#delay").value; Lab.set("late-box", "Waiting " + d / 1000 + " s..."); setTimeout(function () { var el = document.createElement("div"); el.id = "late-el"; el.className = "banner good"; el.setAttribute("data-testid", "late-el"); el.textContent = "I was added to the DOM after " + d / 1000 + " seconds"; $("#late-box").appendChild(el); }, d); });
+$("#b-reveal").addEventListener("click", function () { setTimeout(function () { $("#hidden-el").style.display = "block"; }, 1500); });
+function vanish() { $("#vanish-wrap").innerHTML = '<button class="btn sec" id="vanish-el">I disappear in 4 s</button>'; setTimeout(function () { var e = $("#vanish-el"); if (e) e.remove(); }, 4000); }
+$("#b-vanish").addEventListener("click", vanish); vanish();
+var n = 0; function rerender() { n++; $("#rerender-wrap").innerHTML = '<button class="btn sec" id="rerender-btn" data-version="' + n + '">Re-rendered (version ' + n + ')</button>'; $("#rerender-count").textContent = "render count: " + n; } rerender(); setInterval(rerender, 2000);
+var rid = "btn-" + Math.random().toString(36).slice(2, 8); $("#rand-btn-holder").id = rid; $("#rand-info").textContent = "id this time: " + rid;
+$("#b-submit").addEventListener("click", function () { $("#spin").hidden = false; Lab.set("submit-result", "Submitting..."); setTimeout(function () { $("#spin").hidden = true; Lab.set("submit-result", "Submitted at " + new Date().toLocaleTimeString(), "ok"); }, 2000); });
+var ok = 0, fail = 0; $("#b-flaky").addEventListener("click", function () { var f = Math.random() * 100 < +$("#rate").value; if (f) { fail++; Lab.set("flaky-result", "Error 500: please retry", "bad"); } else { ok++; Lab.set("flaky-result", "Success", "ok"); } $("#flaky-stats").textContent = "successes: " + ok + ", failures: " + fail; });
+$("#b-move").addEventListener("click", function () { Lab.set("move-result", "Clicked the moving button", "ok"); });
+setInterval(function () { $("#ticker").textContent = "Live ticker: " + new Date().toLocaleTimeString(); }, 1000);
+</script>
+</body></html>

@@ -1,14 +1,47 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kartly - Demo Store</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="site-header"></div>
-<main class="wrap">
-  <section class="hero"><div><h2>Season sale, up to 40% off</h2><p>Headphones, sneakers, home essentials and more.</p><a class="btn" href="#deals">Shop deals</a></div><div class="art">🛍️</div></section>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main">
+  <section class="hero"><div><h2>Season sale, up to 40% off</h2><p>Headphones, sneakers, home essentials and more.</p><a class="btn" href="#deals" id="shop-deals">Shop deals</a></div><div class="art">🛍️</div></section>
   <div class="perks"><div class="perk"><b>Free shipping</b>On orders over $50</div><div class="perk"><b>30-day returns</b>No questions asked</div><div class="perk"><b>Secure checkout</b>Demo store only</div><div class="perk"><b>24/7 support</b>We are here to help</div></div>
-  <div class="section-title" id="deals"><h3>Trending now</h3><a href="#">View all</a></div>
+  <div class="section-title" id="deals"><h3 id="page-title">Trending now</h3><span class="meta" id="result-count" aria-live="polite"></span></div>
+  <div class="filters" role="group" aria-label="Filters">
+    <div id="chips"></div>
+    <label class="inline">Sort <select id="sort" aria-label="Sort products"><option value="featured">Featured</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="rating">Top rated</option><option value="name">Name A-Z</option></select></label>
+    <label class="inline">Max price <input id="max" type="number" min="0" step="10" placeholder="any" style="width:90px"></label>
+    <label class="inline"><input id="instock" type="checkbox"> In stock only</label>
+    <button class="btn sec" id="reset" type="button">Reset</button>
+  </div>
   <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden><h3>No products match</h3><p>Try a different search or clear the filters.</p></div>
 </main>
 <div id="site-footer"></div>
-<script src="app.js"></script>
-<script>Kartly.header();document.getElementById("grid").innerHTML=Kartly.products.map(Kartly.card).join("");Kartly.renderBadge();</script>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+var P = new URLSearchParams(location.search), state = { q: (P.get("q") || "").toLowerCase(), cat: P.get("cat") || "All", sort: P.get("sort") || "featured", max: P.get("max") || "", instock: P.get("instock") === "1" };
+var cats = ["All", "Electronics", "Fashion", "Home", "Sports"];
+function render() {
+  document.getElementById("chips").innerHTML = cats.map(function (c) { return '<button type="button" class="chip' + (c === state.cat ? " on" : "") + '" data-cat="' + c + '" aria-pressed="' + (c === state.cat) + '">' + c + '</button>'; }).join("");
+  var list = Kartly.products.filter(function (p) {
+    return (state.cat === "All" || p.cat === state.cat) && (!state.q || p.name.toLowerCase().indexOf(state.q) > -1 || p.cat.toLowerCase().indexOf(state.q) > -1) && (!state.max || p.price <= +state.max) && (!state.instock || p.stock > 0);
+  });
+  var s = state.sort;
+  list.sort(function (a, b) { return s === "price-asc" ? a.price - b.price : s === "price-desc" ? b.price - a.price : s === "rating" ? b.rating - a.rating : s === "name" ? a.name.localeCompare(b.name) : a.id - b.id; });
+  document.getElementById("grid").innerHTML = list.map(Kartly.card).join("");
+  document.getElementById("empty").hidden = list.length > 0;
+  document.getElementById("result-count").textContent = list.length + " product" + (list.length === 1 ? "" : "s");
+  Kartly.renderBadge();
+}
+document.getElementById("chips").addEventListener("click", function (e) { var c = e.target.getAttribute("data-cat"); if (c) { state.cat = c; render(); } });
+document.getElementById("sort").value = state.sort;
+document.getElementById("sort").addEventListener("change", function (e) { state.sort = e.target.value; render(); });
+document.getElementById("max").value = state.max;
+document.getElementById("max").addEventListener("input", function (e) { state.max = e.target.value; render(); });
+document.getElementById("instock").checked = state.instock;
+document.getElementById("instock").addEventListener("change", function (e) { state.instock = e.target.checked; render(); });
+document.getElementById("reset").addEventListener("click", function () { state = { q: "", cat: "All", sort: "featured", max: "", instock: false }; document.getElementById("sort").value = "featured"; document.getElementById("max").value = ""; document.getElementById("instock").checked = false; document.getElementById("search").value = ""; render(); });
+render();
+</script>
 </body></html>

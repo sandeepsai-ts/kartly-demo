@@ -1,17 +1,16 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Account - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="site-header"></div>
-<main class="wrap"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
 <h1 id="page-title">My Account</h1>
 <p class="sub" id="welcome">Welcome back, demo_shopper</p>
 <div class="stats"><div class="stat"><b>3</b>Open orders</div><div class="stat"><b>$214</b>Spent this month</div><div class="stat"><b id="login-count">1</b>Logins in this browser</div></div>
 <h3>Recent activity</h3><table><tr><th>Item</th><th>Date</th><th>Status</th></tr>
 <tr><td>Noise-cancelling Headphones</td><td>12 Nov</td><td><span class="pill ship">Shipped</span></td></tr>
 <tr><td>Pour-over Coffee Set</td><td>08 Nov</td><td><span class="pill">Delivered</span></td></tr></table>
-<script>document.addEventListener("DOMContentLoaded",function(){var c=document.getElementById("login-count");if(c)c.textContent=Kartly.loginCount();});</script>
 </section></div></main>
 <div id="site-footer"></div>
-<script src="app.js"></script>
-<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("account.html");}</script>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("account.html");}</script><script>document.addEventListener("DOMContentLoaded",function(){var c=document.getElementById("login-count");if(c)c.textContent=Kartly.loginCount();});</script>
 </body></html>

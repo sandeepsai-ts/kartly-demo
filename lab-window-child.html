@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Child window - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Child window</nav>
+<section class="demo"><h1 id="page-title">Child window</h1><p class="sub">Opened from the windows page. Shows its query string and can talk back to its opener.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Read <code>#child-msg</code> to confirm which link opened this page.</li><li><code>#close-me</code> closes the window (works only if it was opened by a script).</li></ul></details></section>
+<section class="demo"><h2>Message</h2><p id="child-msg" class="result" data-testid="child-msg"></p><div class="row"><button class="btn primary" id="ping">Ping opener</button><button class="btn sec" id="close-me">Close this window</button></div><div id="child-status" class="result"></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var m = new URLSearchParams(location.search).get("msg") || "(no message)"; document.getElementById("child-msg").textContent = "Opened with: " + m; document.title = "Child: " + m;
+document.getElementById("ping").onclick = function () { try { window.opener && window.opener.postMessage({ type: "child-ping", value: m }, "*"); Lab.set("child-status", window.opener ? "Ping sent to opener" : "No opener (opened with noopener or directly)", window.opener ? "ok" : "bad"); } catch (e) { Lab.set("child-status", "Error: " + e.message, "bad"); } };
+document.getElementById("close-me").onclick = function () { window.close(); Lab.set("child-status", "window.close() ignored: not opened by script"); };
+</script>
+</body></html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accessibility and display - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Accessibility and display</nav>
+<section class="demo"><h1 id="page-title">Accessibility and display</h1><p class="sub">Landmarks, ARIA patterns and display preferences that change how the page renders.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Landmarks (<code>banner</code>, <code>main</code>, <code>nav</code>, <code>contentinfo</code>) and a skip link that appears on first Tab.</li><li>ARIA live region <code>#live</code> announces updates without moving focus.</li><li>Accordion buttons use <code>aria-expanded</code>; the modal traps focus and returns it on close.</li><li>Labels: a properly associated label versus a placeholder-only input.</li><li>Preferences persist in localStorage and apply on every page: dark mode, high contrast, large text, reduced motion, right-to-left layout.</li></ul></details></section>
+<section class="demo"><h2>Display preferences</h2><div class="row"><label class="inline"><span class="switch"><input type="checkbox" id="p-dark" role="switch"><span></span></span> Dark mode</label><label class="inline"><span class="switch"><input type="checkbox" id="p-hc" role="switch"><span></span></span> High contrast</label><label class="inline"><span class="switch"><input type="checkbox" id="p-big" role="switch"><span></span></span> Large text</label><label class="inline"><span class="switch"><input type="checkbox" id="p-motion" role="switch"><span></span></span> Reduce motion</label><label class="inline"><span class="switch"><input type="checkbox" id="p-rtl" role="switch"><span></span></span> Right-to-left</label></div><div id="p-out" class="result" aria-live="polite"></div></section>
+<section class="demo"><h2>Live region, accordion, focus trap</h2><div class="row"><button class="btn primary" id="b-announce">Announce update</button><button class="btn sec" id="b-modal">Open focus-trap dialog</button></div><div id="live" class="result" role="status" aria-live="polite" data-testid="live"></div>
+<div style="margin-top:12px"><h3 style="margin:0"><button class="tab" id="acc1" aria-expanded="false" aria-controls="acc1-p" style="width:100%;text-align:left">What is your return policy?</button></h3><div id="acc1-p" hidden class="tabpanel">30 days, no questions asked.</div>
+<h3 style="margin:0"><button class="tab" id="acc2" aria-expanded="false" aria-controls="acc2-p" style="width:100%;text-align:left">Do you ship internationally?</button></h3><div id="acc2-p" hidden class="tabpanel">Yes, to over 40 countries.</div></div>
+<dialog id="trap" aria-labelledby="trap-t"><h3 id="trap-t" style="margin-top:0">Focus trap</h3><p class="sub">Tab cycles inside this dialog.</p><div class="row"><button class="btn sec" id="trap-a">First</button><button class="btn sec" id="trap-b">Second</button><button class="btn primary" id="trap-close">Close</button></div></dialog></section>
+<section class="demo"><h2>Label quality</h2><div class="col2"><div class="field"><label for="good-input">Good: associated label</label><input id="good-input" type="text"></div><div class="field"><input id="bad-input" type="text" placeholder="Bad: placeholder only, no label"></div></div><p class="sub">Contrast: <span style="color:#767676">#767676 on white (passes AA, barely)</span>, <span style="color:#b0b0b0">#b0b0b0 on white (fails)</span>.</p></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$, p = {}; try { p = JSON.parse(localStorage.getItem("kartly_prefs") || "{}"); } catch (e) {}
+var map = { "p-dark": ["dark", "dark"], "p-hc": ["hc", "hc"], "p-big": ["big", "big-text"], "p-motion": ["nomotion", "nomotion"] };
+Object.keys(map).forEach(function (id) { $("#" + id).checked = !!p[map[id][0]]; $("#" + id).addEventListener("change", function (e) { document.body.classList.toggle(map[id][1], e.target.checked); Lab.savePref(map[id][0], e.target.checked); Lab.set("p-out", map[id][0] + " " + (e.target.checked ? "on" : "off"), "ok"); }); });
+$("#p-rtl").checked = !!p.rtl; $("#p-rtl").addEventListener("change", function (e) { document.documentElement.setAttribute("dir", e.target.checked ? "rtl" : "ltr"); Lab.savePref("rtl", e.target.checked); Lab.set("p-out", "rtl " + (e.target.checked ? "on" : "off"), "ok"); });
+var n = 0; $("#b-announce").addEventListener("click", function () { n++; $("#live").textContent = "Update " + n + " at " + new Date().toLocaleTimeString(); });
+["acc1", "acc2"].forEach(function (id) { $("#" + id).addEventListener("click", function (e) { var o = e.target.getAttribute("aria-expanded") === "true"; e.target.setAttribute("aria-expanded", !o); $("#" + id + "-p").hidden = o; }); });
+var trap = $("#trap"), opener; $("#b-modal").addEventListener("click", function () { opener = document.activeElement; trap.showModal(); $("#trap-a").focus(); });
+trap.addEventListener("close", function () { if (opener) opener.focus(); }); $("#trap-close").addEventListener("click", function () { trap.close(); });
+trap.addEventListener("keydown", function (e) { if (e.key !== "Tab") return; var f = Lab.$$("button", trap), first = f[0], last = f[f.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } });
+</script>
+</body></html>

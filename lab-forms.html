@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forms and inputs - Kartly Test Lab</title><link rel="stylesheet" href="style.css"></head><body>
+<a class="skip" href="#main">Skip to content</a><div id="site-header"></div>
+<main class="wrap" id="main"><nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Store</a> / <a href="lab.html">Test Lab</a> / Forms and inputs</nav>
+<section class="demo"><h1 id="page-title">Forms and inputs</h1><p class="sub">Native and custom controls, client-side validation, masks and every input state a test has to cope with.</p><details class="ideas"><summary>Test ideas and selectors</summary><ul><li>Required, pattern, min/max and cross-field (password match) validation with <code>aria-invalid</code> and <code>.field-error</code>.</li><li>Disabled and read-only inputs: <code>#f-disabled</code>, <code>#f-readonly</code>.</li><li>Multi-select, optgroups, datalist, custom ARIA dropdown <code>#combo</code>, hidden checkbox behind a switch.</li><li>Character counter, number stepper limits, date/time/color/range inputs, phone mask, show/hide password.</li><li>Submit result is JSON in <code>#form-result</code>; errors list in <code>#form-errors</code>.</li></ul></details></section>
+<section class="demo"><h2>Registration form</h2><p class="note">Submit with empty fields first, then fix the errors one by one.</p>
+<form id="reg" novalidate class="col2">
+ <div class="field"><label for="f-name">Full name *</label><input id="f-name" type="text" data-testid="name" required><div class="field-error" id="err-f-name"></div></div>
+ <div class="field"><label for="f-email">Email *</label><input id="f-email" type="email" data-testid="email" required><div class="field-error" id="err-f-email"></div></div>
+ <div class="field"><label for="f-age">Age (18-99) *</label><input id="f-age" type="number" min="18" max="99" data-testid="age"><div class="field-error" id="err-f-age"></div></div>
+ <div class="field"><label for="f-phone">Phone (mask: 000-000-0000)</label><input id="f-phone" type="tel" placeholder="555-123-4567" maxlength="12"><div class="field-error" id="err-f-phone"></div></div>
+ <div class="field"><label for="f-pw">Password (min 8) *</label><input id="f-pw" type="password" data-testid="password"><div class="field-error" id="err-f-pw"></div></div>
+ <div class="field"><label for="f-pw2">Confirm password *</label><input id="f-pw2" type="password"><div class="field-error" id="err-f-pw2"></div></div>
+ <div class="field"><label for="f-country">Country</label><select id="f-country"><option value="">Select...</option><optgroup label="Americas"><option>United States</option><option>Canada</option></optgroup><optgroup label="Asia"><option>India</option><option>Japan</option></optgroup></select></div>
+ <div class="field"><label for="f-interests">Interests (multi-select)</label><select id="f-interests" multiple size="4"><option>Electronics</option><option>Fashion</option><option>Home</option><option>Sports</option></select></div>
+ <div class="field"><label for="f-city">City (datalist)</label><input id="f-city" list="cities" type="text"><datalist id="cities"><option value="Austin"><option value="Berlin"><option value="Chennai"><option value="Delhi"></datalist></div>
+ <div class="field"><label for="f-date">Birthday</label><input id="f-date" type="date"></div>
+ <div class="field"><label for="f-time">Preferred time</label><input id="f-time" type="time"></div>
+ <div class="field"><label for="f-color">Favourite colour</label><input id="f-color" type="color" value="#ff6a3d"></div>
+ <div class="field"><label for="f-range">Satisfaction: <output id="range-out">5</output>/10</label><input id="f-range" type="range" min="0" max="10" value="5"></div>
+ <div class="field"><label for="f-disabled">Disabled field</label><input id="f-disabled" type="text" value="cannot edit" disabled></div>
+ <div class="field"><label for="f-readonly">Read-only field</label><input id="f-readonly" type="text" value="read only value" readonly></div>
+ <div class="field" style="grid-column:1/-1"><label for="f-bio">Bio (max 120 characters) <span id="bio-count" class="sub">0/120</span></label><textarea id="f-bio" rows="3" maxlength="120"></textarea></div>
+ <div style="grid-column:1/-1"><span class="inline">Contact by:</span><label class="inline"><input type="radio" name="contact" value="email" checked> Email</label><label class="inline"><input type="radio" name="contact" value="sms"> SMS</label><label class="inline"><input type="radio" name="contact" value="none"> None</label></div>
+ <div style="grid-column:1/-1"><label class="inline"><input type="checkbox" id="f-terms"> I accept the terms *</label><div class="field-error" id="err-f-terms"></div>
+  <label class="inline">Newsletter <span class="switch"><input type="checkbox" id="f-news" role="switch"><span></span></span></label>
+  <label class="inline"><input type="checkbox" id="f-pwtoggle"> Show passwords</label></div>
+ <div style="grid-column:1/-1" class="row"><button class="btn primary" id="f-submit" type="submit">Create account</button><button class="btn sec" id="f-reset" type="reset">Reset</button></div>
+</form><div id="form-errors" class="result bad" role="alert" hidden></div><pre id="form-result" class="log" data-testid="form-result" hidden></pre></section>
+<section class="demo"><h2>Custom controls</h2><p class="note">Not native elements: they need role-based selectors and keyboard support.</p>
+<div class="col2"><div><label id="combo-label">Custom dropdown (ARIA listbox)</label><div style="position:relative"><button type="button" id="combo" class="btn sec" style="width:100%;text-align:left" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="combo-label combo">Choose a size</button>
+ <ul id="combo-list" role="listbox" hidden style="position:absolute;z-index:5;left:0;right:0;margin:4px 0 0;padding:4px;list-style:none;background:#fff;border:1px solid #e4e9ef;border-radius:8px"></ul></div><div id="combo-out" class="result"></div></div>
+<div><label for="auto">Autocomplete (type 2+ letters)</label><input id="auto" type="text" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="auto-list"><ul id="auto-list" role="listbox" style="list-style:none;padding:0;margin:4px 0"></ul></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script><script src="lab.js"></script>
+<script>
+Kartly.header();
+
+var $ = Lab.$;
+function err(id, msg) { var e = $("#err-" + id), i = $("#" + id); e.textContent = msg || ""; if (i) i.setAttribute("aria-invalid", msg ? "true" : "false"); return !msg; }
+$("#f-bio").addEventListener("input", function (e) { $("#bio-count").textContent = e.target.value.length + "/120"; });
+$("#f-range").addEventListener("input", function (e) { $("#range-out").textContent = e.target.value; });
+$("#f-phone").addEventListener("input", function (e) { var d = e.target.value.replace(/\D/g, "").slice(0, 10); e.target.value = d.length > 6 ? d.slice(0, 3) + "-" + d.slice(3, 6) + "-" + d.slice(6) : d.length > 3 ? d.slice(0, 3) + "-" + d.slice(3) : d; });
+$("#f-pwtoggle").addEventListener("change", function (e) { $("#f-pw").type = $("#f-pw2").type = e.target.checked ? "text" : "password"; });
+$("#reg").addEventListener("reset", function () { setTimeout(function () { $("#bio-count").textContent = "0/120"; $("#form-result").hidden = true; $("#form-errors").hidden = true; Lab.$$(".field-error").forEach(function (x) { x.textContent = ""; }); }, 0); });
+$("#reg").addEventListener("submit", function (e) {
+  e.preventDefault(); var bad = [];
+  function chk(ok, id, msg) { err(id, ok ? "" : msg); if (!ok) bad.push(msg); }
+  chk($("#f-name").value.trim().length > 1, "f-name", "Name is required (2+ characters)");
+  chk(/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test($("#f-email").value), "f-email", "Enter a valid email address");
+  var age = +$("#f-age").value; chk($("#f-age").value !== "" && age >= 18 && age <= 99, "f-age", "Age must be between 18 and 99");
+  chk($("#f-phone").value === "" || /^\d{3}-\d{3}-\d{4}$/.test($("#f-phone").value), "f-phone", "Phone must look like 555-123-4567");
+  chk($("#f-pw").value.length >= 8, "f-pw", "Password must be at least 8 characters");
+  chk($("#f-pw2").value === $("#f-pw").value && $("#f-pw2").value !== "", "f-pw2", "Passwords do not match");
+  chk($("#f-terms").checked, "f-terms", "You must accept the terms");
+  var box = $("#form-errors"), out = $("#form-result");
+  if (bad.length) { box.hidden = false; box.textContent = bad.length + " problem(s): " + bad.join("; "); out.hidden = true; return; }
+  box.hidden = true; out.hidden = false;
+  out.textContent = JSON.stringify({ name: $("#f-name").value, email: $("#f-email").value, age: age, country: $("#f-country").value, interests: Array.prototype.map.call($("#f-interests").selectedOptions, function (o) { return o.value; }), contact: document.querySelector("[name=contact]:checked").value, newsletter: $("#f-news").checked, satisfaction: +$("#f-range").value }, null, 2);
+});
+var sizes = ["Small", "Medium", "Large", "Extra large"], btn = $("#combo"), list = $("#combo-list");
+list.innerHTML = sizes.map(function (s, i) { return '<li role="option" id="opt' + i + '" tabindex="-1" style="padding:8px 10px;cursor:pointer;border-radius:6px" data-v="' + s + '">' + s + '</li>'; }).join("");
+function toggle(open) { list.hidden = !open; btn.setAttribute("aria-expanded", open); }
+btn.addEventListener("click", function () { toggle(list.hidden); });
+list.addEventListener("click", function (e) { var v = e.target.getAttribute("data-v"); if (v) { btn.textContent = v; $("#combo-out").textContent = "Selected: " + v; toggle(false); } });
+btn.addEventListener("keydown", function (e) { if (e.key === "ArrowDown") { toggle(true); $("#opt0").focus(); e.preventDefault(); } });
+list.addEventListener("keydown", function (e) { var o = document.activeElement, i = sizes.indexOf(o.getAttribute("data-v")); if (e.key === "ArrowDown" && i < 3) $("#opt" + (i + 1)).focus(); if (e.key === "ArrowUp" && i > 0) $("#opt" + (i - 1)).focus(); if (e.key === "Enter") o.click(); if (e.key === "Escape") { toggle(false); btn.focus(); } });
+var names = ["Apple", "Apricot", "Avocado", "Banana", "Blueberry", "Cherry", "Cranberry", "Grape", "Guava", "Mango"];
+$("#auto").addEventListener("input", function (e) { var v = e.target.value.toLowerCase(), m = v.length < 2 ? [] : names.filter(function (n) { return n.toLowerCase().indexOf(v) === 0; });
+  $("#auto-list").innerHTML = m.map(function (n) { return '<li role="option" data-n="' + n + '" style="padding:6px 10px;cursor:pointer;border:1px solid #e4e9ef;margin-bottom:2px;border-radius:6px">' + n + '</li>'; }).join(""); e.target.setAttribute("aria-expanded", m.length > 0); });
+$("#auto-list").addEventListener("click", function (e) { var n = e.target.getAttribute("data-n"); if (n) { $("#auto").value = n; $("#auto-list").innerHTML = ""; } });
+</script>
+</body></html>

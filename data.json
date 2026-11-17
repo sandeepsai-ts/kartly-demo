@@ -1,0 +1,20 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Noise-cancelling Headphones",
+      "price": 129
+    },
+    {
+      "id": 2,
+      "name": "Smart Watch Series 5",
+      "price": 199
+    },
+    {
+      "id": 3,
+      "name": "Trail Running Shoes",
+      "price": 84
+    }
+  ],
+  "generated": "static"
+}
