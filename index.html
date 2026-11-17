@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kartly - Demo Store</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="site-header"></div>
+<main class="wrap">
+  <section class="hero"><div><h2>Season sale, up to 40% off</h2><p>Headphones, sneakers, home essentials and more.</p><a class="btn" href="#deals">Shop deals</a></div><div class="art">🛍️</div></section>
+  <div class="perks"><div class="perk"><b>Free shipping</b>On orders over $50</div><div class="perk"><b>30-day returns</b>No questions asked</div><div class="perk"><b>Secure checkout</b>Demo store only</div><div class="perk"><b>24/7 support</b>We are here to help</div></div>
+  <div class="section-title" id="deals"><h3>Trending now</h3><a href="#">View all</a></div>
+  <div class="grid" id="grid"></div>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script>
+<script>Kartly.header();document.getElementById("grid").innerHTML=Kartly.products.map(Kartly.card).join("");Kartly.renderBadge();</script>
+</body></html>

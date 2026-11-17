@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orders - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="site-header"></div>
+<main class="wrap"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
+<h1 id="page-title">Orders</h1>
+<p class="sub">Everything you have bought recently.</p>
+<table><tr><th>Order</th><th>Items</th><th>Total</th><th>Status</th></tr>
+<tr><td>#10482</td><td>Noise-cancelling Headphones</td><td>$129</td><td><span class="pill ship">Shipped</span></td></tr>
+<tr><td>#10477</td><td>Pour-over Coffee Set</td><td>$42</td><td><span class="pill">Delivered</span></td></tr>
+<tr><td>#10460</td><td>Trail Running Shoes</td><td>$84</td><td><span class="pill">Delivered</span></td></tr></table>
+</section></div></main>
+<div id="site-footer"></div>
+<script src="app.js"></script>
+<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("orders.html");}</script>
+</body></html>

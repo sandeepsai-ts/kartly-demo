@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="site-header"></div>
+<main class="wrap"><div class="auth">
+  <h1 id="login-title">Sign in</h1><p class="sub">Welcome back. Sign in to see your orders and wishlist.</p>
+  <div id="login-error" class="error" style="display:none"></div>
+  <form id="form"><div class="field"><label for="username">Username</label><input id="username" name="username" autocomplete="off"></div>
+  <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="off"></div>
+  <button id="login" class="btn primary" type="submit">Sign in</button></form>
+  <div class="hint"><b>Demo account (test data only)</b><br>Username: demo_shopper<br>Password: Demo-Only-2026</div>
+</div></main>
+<div id="site-footer"></div>
+<script src="app.js"></script>
+<script>Kartly.header();
+document.getElementById("form").addEventListener("submit",function(e){e.preventDefault();
+var r=Kartly.login(document.getElementById("username").value,document.getElementById("password").value);
+if(r.ok){location.href="account.html";}else{var b=document.getElementById("login-error");b.textContent=r.msg;b.style.display="block";}});</script>
+</body></html>

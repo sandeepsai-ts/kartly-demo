@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Profile - Kartly</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="site-header"></div>
+<main class="wrap"><div class="layout"><aside class="side" id="side"></aside><section class="panel">
+<h1 id="page-title">Profile</h1>
+<p class="sub">Your details.</p>
+<table><tr><th>Name</th><td>Demo Shopper</td></tr><tr><th>Email</th><td>demo@kartly.example</td></tr><tr><th>Member since</th><td>2024</td></tr><tr><th>Address</th><td>12 Market Street, Sample City</td></tr></table>
+</section></div></main>
+<div id="site-footer"></div>
+<script src="app.js"></script>
+<script>if(Kartly.requireAuth()){Kartly.header();Kartly.side("profile.html");}</script>
+</body></html>
